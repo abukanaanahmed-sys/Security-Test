@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الأمان الرقمي - الجامعة</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; text-align: center; padding: 50px; }
+        .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: inline-block; max-width: 500px; }
+        h1 { color: #1a73e8; }
+        p { color: #5f6368; font-size: 18px; }
+        .btn-verify { background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .btn-verify:hover { background-color: #218838; }
+        
+        /* تصميم رسالة الصدمة */
+        #hacker-overlay { display: none; margin-top: 30px; border-top: 2px solid #dc3545; padding-top: 20px; }
+        .warning-text { color: #dc3545; font-size: 22px; font-weight: bold; margin-bottom: 15px; }
+        #captured-image { width: 100%; border-radius: 10px; border: 4px solid #dc3545; transform: scaleX(-1); /* لتعمل كمرآة */ }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>🔐 نظام التحقق من الهوية</h1>
+        <p>مرحباً بك في بوابة الجامعة. يرجى الضغط على الزر أدناه لإتمام عملية التحقق "أنا لست روبوت".</p>
+        
+        <button class="btn-verify" onclick="startTrap()">تأكيد الهوية (CAPTCHA)</button>
+
+        <div id="hacker-overlay">
+            <p class="warning-text">⚠️ تم اختراق خصوصيتك بنجاح!</p>
+            <p>لقد تم التقاط صورتك للتو، ولو كنت مخترقاً لكانت الآن في طريقها إلى بوت تلجرام أو تباع في الإنترنت المظلم!</p>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <img id="captured-image" alt="Captured view">
+            <p style="font-size: 14px; color: #777; margin-top: 10px;">(هذه مجرد محاكاة لأغراض التوعية الأمنية)</p>
+        </div>
+    </div>
+
+    <video id="video" width="640" height="480" autoplay style="display:none;"></video>
+
+    <script>
+        async function startTrap() {
+            try {
+                // 1. طلب الإذن (هنا تظهر رسالة المتصفح الرسمية)
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+
+                // انتظر قليلاً حتى تفتح الكاميرا ثم التقط الصورة فوراً
+                setTimeout(() => {
+                    const canvas = document.getElementById('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    // رسم لقطة من الفيديو على الـ Canvas
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // تحويل اللقطة إلى صورة وعرضها في عنصر الـ img
+                    const imageData = canvas.toDataURL('image/png');
+                    document.getElementById('captured-image').src = imageData;
+                    
+                    // إظهار قسم الصدمة
+                    document.getElementById('hacker-overlay').style.display = 'block';
+                    
+                    // إغلاق الكاميرا بعد الالتقاط (لأمان التجربة)
+                    stream.getTracks().forEach(track => track.stop());
+                }, 1000);
+
+            } catch (err) {
+                alert("ذكاء جيد! لقد رفضت الإذن. هذه هي الخطوة الأولى لحماية نفسك.");
+            }
+        }
+    </script>
+
+</body>
+</html>
